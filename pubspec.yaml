@@ -1,0 +1,23 @@
+name: app_template
+description: Шаблон Flutter-приложения для Android и iOS.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <5.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Хранение настроек и данных на устройстве. Для начала можно не использовать.
+  shared_preferences: ^2.2.0
+
+# shared_preferences_android 2.5.0 падает на части Android-устройств
+# (NoSuchMethodError, данные не сохраняются). Закреплена проверенная версия.
+# Если добавляете другие плагины, закрепляйте их версии так же:
+# файла pubspec.lock в репозитории нет, и сборка берёт самые свежие версии.
+dependency_overrides:
+  shared_preferences_android: 2.4.28
+
+flutter:
+  uses-material-design: true
