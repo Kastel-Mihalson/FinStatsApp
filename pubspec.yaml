@@ -38,6 +38,9 @@ dev_dependencies:
   freezed: ^2.4.0
   json_serializable: ^6.7.0
 
+  # Testing database
+  sqflite_common_ffi: ^2.3.0
+
 # shared_preferences_android 2.5.0 падает на части Android-устройств
 # (NoSuchMethodError, данные не сохраняются). Закреплена проверенная версия.
 # Если добавляете другие плагины, закрепляйте их версии так же:

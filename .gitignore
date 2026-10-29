@@ -30,3 +30,6 @@ ios/Flutter/flutter_export_environment.sh
 #Docs and Builds
 /docs
 /builds
+
+# Claude progress tracking
+.claude_progress.md
