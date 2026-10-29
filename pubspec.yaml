@@ -1,4 +1,4 @@
-name: app_template
+name: fin_stats_app
 description: Шаблон Flutter-приложения для Android и iOS.
 publish_to: none
 version: 1.0.0+1

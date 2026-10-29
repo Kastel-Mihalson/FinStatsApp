@@ -5,7 +5,7 @@ import 'pages/app_template_page.dart';
 
 /// Название приложения внутри Flutter (заголовок в списке запущенных).
 /// Название под иконкой задаётся в .github/workflows/build.yml (APP_NAME).
-const String appTitle = 'AppTemplate';
+const String appTitle = 'Финансовая статистика';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();

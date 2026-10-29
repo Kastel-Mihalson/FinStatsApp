@@ -9,9 +9,9 @@ on:
 # Эти три значения меняет скрипт new_app.py (или вы вручную).
 # PROJECT_NAME должен совпадать с name в pubspec.yaml.
 env:
-  APP_NAME: AppTemplate            # название под иконкой на телефоне
-  PROJECT_NAME: app_template       # имя проекта: латиница, строчные, цифры, _
-  ORG: com.example                 # организация; id приложения = ORG.PROJECT_NAME
+  APP_NAME: Финансовая статистика
+  PROJECT_NAME: fin_stats_app
+  ORG: comido.app
 
 jobs:
   android:
