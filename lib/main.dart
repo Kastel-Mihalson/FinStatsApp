@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'pages/app_template_page.dart';
+import 'core/di/injection.dart';
+import 'presentation/pages/app_template_page.dart';
 
 /// Название приложения внутри Flutter (заголовок в списке запущенных).
 /// Название под иконкой задаётся в .github/workflows/build.yml (APP_NAME).
 const String appTitle = 'Финансовая статистика';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Инициализация DI
+  await setupDependencies();
 
   // Вместо серого/чёрного экрана при ошибке показываем её текст.
   ErrorWidget.builder = (FlutterErrorDetails details) {

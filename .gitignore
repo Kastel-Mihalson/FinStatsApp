@@ -26,3 +26,7 @@ ios/Flutter/flutter_export_environment.sh
 **/xcuserdata/
 
 .DS_Store
+
+#Docs and Builds
+/docs
+/builds
