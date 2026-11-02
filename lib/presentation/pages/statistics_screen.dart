@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/date_utils.dart';
+import '../../domain/usecases/money_aggregation_service.dart';
+import '../../domain/usecases/quantity_aggregation_service.dart';
 import '../providers/statistics_provider.dart';
 
 /// Экран статистики с агрегацией данных
