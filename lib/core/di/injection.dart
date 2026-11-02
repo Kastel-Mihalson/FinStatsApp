@@ -12,6 +12,7 @@ import '../../domain/repositories/section_repository.dart';
 import '../../domain/repositories/unit_repository.dart';
 import '../../presentation/providers/entry_provider.dart';
 import '../../presentation/providers/section_provider.dart';
+import '../../presentation/providers/statistics_provider.dart';
 import '../../presentation/providers/unit_provider.dart';
 
 final getIt = GetIt.instance;
@@ -52,6 +53,9 @@ Future<void> setupDependencies() async {
   );
   getIt.registerFactory<EntryProvider>(
     () => EntryProvider(getIt()),
+  );
+  getIt.registerFactory<StatisticsProvider>(
+    () => StatisticsProvider(getIt(), getIt()),
   );
 
   // Инициализация БД (создание таблиц и предзаполнение)

@@ -6,6 +6,7 @@ import 'core/di/injection.dart';
 import 'presentation/pages/sections_list_screen.dart';
 import 'presentation/providers/entry_provider.dart';
 import 'presentation/providers/section_provider.dart';
+import 'presentation/providers/statistics_provider.dart';
 import 'presentation/providers/unit_provider.dart';
 
 /// Название приложения внутри Flutter (заголовок в списке запущенных).
@@ -51,6 +52,7 @@ class App extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => getIt<UnitProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<SectionProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<EntryProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<StatisticsProvider>()),
       ],
       child: MaterialApp(
         title: appTitle,
