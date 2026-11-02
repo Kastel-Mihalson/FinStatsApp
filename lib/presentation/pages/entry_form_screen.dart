@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../core/utils/amount_utils.dart';
 import '../../domain/entities/entry.dart';
 import '../../domain/entities/unit.dart';
 import '../providers/entry_provider.dart';
@@ -59,7 +60,8 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
       setState(() {
         _editingEntry = entry;
         _descriptionController.text = entry.description;
-        _amountController.text = (entry.amount / 100.0).toStringAsFixed(2);
+        _amountController.text =
+            AmountUtils.formatNumber(entry.amount, entry.valueType);
         _noteController.text = entry.note ?? '';
         _valueType = entry.valueType;
         _selectedUnitId = entry.unitId;
@@ -188,14 +190,20 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                             ? 'Сумма'
                             : 'Количество',
                         border: const OutlineInputBorder(),
-                        helperText: 'Например: 123.45',
+                        helperText: _valueType == ValueType.money
+                            ? 'Например: 123.45'
+                            : 'Например: 12.5 (до 3 знаков)',
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,2}'),
+                          RegExp(
+                            _valueType == ValueType.money
+                                ? r'^\d+\.?\d{0,2}'
+                                : r'^\d+\.?\d{0,3}',
+                          ),
                         ),
                       ],
                       validator: (value) {
@@ -303,7 +311,7 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
 
     try {
       final amount = double.parse(_amountController.text);
-      final amountInMinorUnits = (amount * 100).round();
+      final amountInMinorUnits = AmountUtils.toStored(amount, _valueType);
       final now = DateTime.now();
 
       final entry = Entry(

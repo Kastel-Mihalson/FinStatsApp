@@ -65,6 +65,50 @@ class DateTimeUtils {
     }
   }
 
+  static const List<String> _monthNames = [
+    'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+    'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
+  ];
+
+  /// Сдвинуть опорную дату на [steps] периодов (отрицательное — назад).
+  /// Для месяца и года день приводится к 1-му числу, чтобы не «перескакивать»
+  /// через месяцы с разной длиной (31 января + 1 месяц).
+  static DateTime shiftDate(DateTime date, PeriodType periodType, int steps) {
+    switch (periodType) {
+      case PeriodType.day:
+        return DateTime(date.year, date.month, date.day + steps);
+      case PeriodType.week:
+        return DateTime(date.year, date.month, date.day + 7 * steps);
+      case PeriodType.month:
+        return DateTime(date.year, date.month + steps, 1);
+      case PeriodType.year:
+        return DateTime(date.year + steps, date.month, 1);
+      case PeriodType.all:
+        return date;
+    }
+  }
+
+  /// Подпись периода для интерфейса: «02.11.2026», «Ноябрь 2026», «2026» и т.д.
+  static String formatPeriodLabel(
+    DateTime date,
+    PeriodType periodType, {
+    bool weekStartsOnMonday = true,
+  }) {
+    switch (periodType) {
+      case PeriodType.day:
+        return formatDate(date);
+      case PeriodType.week:
+        final range = getWeekRange(date, weekStartsOnMonday: weekStartsOnMonday);
+        return '${formatDate(range.start)} – ${formatDate(range.end)}';
+      case PeriodType.month:
+        return '${_monthNames[date.month - 1]} ${date.year}';
+      case PeriodType.year:
+        return '${date.year}';
+      case PeriodType.all:
+        return 'Всё время';
+    }
+  }
+
   /// Форматирование даты в строку (локаль RU)
   static String formatDate(DateTime date, {String format = 'dd.MM.yyyy'}) {
     // Базовое форматирование без intl для простоты

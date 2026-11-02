@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/enums/sort_type.dart';
+import '../../core/utils/amount_utils.dart';
 import '../../core/utils/date_utils.dart';
+import '../../domain/entities/entry.dart';
+import '../../domain/entities/unit.dart';
+import '../../domain/usecases/money_aggregation_service.dart';
+import '../../domain/usecases/quantity_aggregation_service.dart';
 import '../providers/entry_provider.dart';
 import '../providers/section_provider.dart';
 import '../providers/unit_provider.dart';
 import 'entry_form_screen.dart';
 
-/// Экран деталей раздела: показывает список записей
+/// Экран деталей раздела: период, итоги, сортировка и список записей
 class SectionDetailScreen extends StatefulWidget {
   final String sectionId;
 
@@ -25,7 +31,7 @@ class _SectionDetailScreenState extends State<SectionDetailScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<EntryProvider>().loadEntriesBySection(widget.sectionId);
+      context.read<EntryProvider>().openSection(widget.sectionId);
     });
   }
 
@@ -42,8 +48,50 @@ class _SectionDetailScreenState extends State<SectionDetailScreen> {
             return const Text('Раздел');
           },
         ),
+        actions: [
+          Consumer<EntryProvider>(
+            builder: (context, provider, child) {
+              return PopupMenuButton<SortType>(
+                icon: const Icon(Icons.sort),
+                tooltip: 'Сортировка',
+                initialValue: provider.sort,
+                onSelected: provider.setSort,
+                itemBuilder: (context) => [
+                  for (final type in SortType.values)
+                    PopupMenuItem<SortType>(
+                      value: type,
+                      child: Text(type.displayName),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
-      body: Consumer<EntryProvider>(
+      body: Column(
+        children: [
+          const _PeriodBar(),
+          Expanded(child: _buildBody()),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EntryFormScreen(
+                sectionId: widget.sectionId,
+              ),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    return Consumer<EntryProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
@@ -76,20 +124,38 @@ class _SectionDetailScreenState extends State<SectionDetailScreen> {
                 children: [
                   const Icon(Icons.receipt_outlined, size: 64, color: Colors.grey),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Нет записей',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  Text(
+                    provider.period == PeriodType.all
+                        ? 'Нет записей'
+                        : 'Нет записей за период',
+                    style: const TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Добавьте первую запись',
-                    style: TextStyle(color: Colors.grey),
+                  Text(
+                    provider.period == PeriodType.all
+                        ? 'Добавьте первую запись'
+                        : 'Выберите другой период или добавьте запись',
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
             );
           }
 
+          return Column(
+            children: [
+              _TotalsCard(
+                entries: provider.entries,
+                units: context.watch<UnitProvider>().units,
+              ),
+              Expanded(child: _buildList(provider)),
+            ],
+          );
+        },
+      );
+  }
+
+  Widget _buildList(EntryProvider provider) {
           return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: provider.entries.length,
@@ -135,7 +201,7 @@ class _SectionDetailScreenState extends State<SectionDetailScreen> {
                     ],
                   ),
                   trailing: Text(
-                    _formatAmount(entry.amount, unit?.displayName ?? ''),
+                    _formatAmount(entry, unit?.displayName ?? ''),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -159,27 +225,10 @@ class _SectionDetailScreenState extends State<SectionDetailScreen> {
               );
             },
           );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EntryFormScreen(
-                sectionId: widget.sectionId,
-              ),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
   }
 
-  String _formatAmount(int amount, String unitDisplayName) {
-    final value = amount / 100.0;
-    return '${value.toStringAsFixed(2)} $unitDisplayName';
+  String _formatAmount(Entry entry, String unitDisplayName) {
+    return '${AmountUtils.formatNumber(entry.amount, entry.valueType)} $unitDisplayName';
   }
 
   void _showEntryOptions(BuildContext context, String entryId) {
@@ -254,6 +303,131 @@ class _SectionDetailScreenState extends State<SectionDetailScreen> {
           ],
         );
       },
+    );
+  }
+}
+
+/// Панель выбора периода: чипы «День / Неделя / Месяц / Год / Всё»
+/// и стрелки перехода к предыдущему/следующему периоду.
+class _PeriodBar extends StatelessWidget {
+  const _PeriodBar();
+
+  static const _labels = <PeriodType, String>{
+    PeriodType.day: 'День',
+    PeriodType.week: 'Неделя',
+    PeriodType.month: 'Месяц',
+    PeriodType.year: 'Год',
+    PeriodType.all: 'Всё',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<EntryProvider>();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(
+        children: [
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final entry in _labels.entries)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(entry.value),
+                      selected: provider.period == entry.key,
+                      onSelected: (_) => provider.setPeriod(entry.key),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          if (provider.canNavigatePeriod)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  tooltip: 'Предыдущий период',
+                  onPressed: provider.previousPeriod,
+                ),
+                Text(
+                  provider.periodLabel,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  tooltip: 'Следующий период',
+                  onPressed: provider.nextPeriod,
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Итоги раздела за выбранный период: деньги — по валютам,
+/// количества — по единицам измерения.
+class _TotalsCard extends StatelessWidget {
+  final List<Entry> entries;
+  final List<Unit> units;
+
+  const _TotalsCard({required this.entries, required this.units});
+
+  @override
+  Widget build(BuildContext context) {
+    final money = MoneyAggregationService.getAggregationsList(
+      entries: entries,
+      units: units,
+    );
+    final quantities = QuantityAggregationService.getAggregationsList(
+      entries: entries,
+      units: units,
+    );
+
+    final lines = <String>[
+      for (final m in money)
+        '${m.amountInMainUnits.toStringAsFixed(2)} ${m.displayName}',
+      for (final q in quantities) q.formatted,
+    ];
+    if (lines.isEmpty) return const SizedBox.shrink();
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Итого · записей: ${entries.length}',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 16,
+              runSpacing: 4,
+              children: [
+                for (final line in lines)
+                  Text(
+                    line,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
