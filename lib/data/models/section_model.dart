@@ -2,16 +2,16 @@
 class SectionModel {
   final String id;
   final String name;
-  final String? icon;
-  final String? color;
+  final String icon;
+  final int color; // Хранится как int (0xFFRRGGBB)
   final int createdAt; // timestamp в миллисекундах
   final int updatedAt;
 
   const SectionModel({
     required this.id,
     required this.name,
-    this.icon,
-    this.color,
+    required this.icon,
+    required this.color,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -21,7 +21,7 @@ class SectionModel {
       'id': id,
       'name': name,
       'icon': icon,
-      'color': color,
+      'color': color.toString(),
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
@@ -31,8 +31,10 @@ class SectionModel {
     return SectionModel(
       id: map['id'] as String,
       name: map['name'] as String,
-      icon: map['icon'] as String?,
-      color: map['color'] as String?,
+      icon: (map['icon'] as String?) ?? '📁', // Дефолтная иконка
+      color: map['color'] != null
+          ? int.parse(map['color'] as String)
+          : 0xFF2196F3, // Дефолтный синий цвет
       createdAt: map['created_at'] as int,
       updatedAt: map['updated_at'] as int,
     );

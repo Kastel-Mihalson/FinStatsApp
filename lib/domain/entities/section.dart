@@ -9,8 +9,8 @@ class Section with _$Section {
   const factory Section({
     required String id,
     required String name,
-    String? icon,
-    String? color,
+    required String icon,
+    required int color,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Section;
