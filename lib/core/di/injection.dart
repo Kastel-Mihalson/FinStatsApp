@@ -4,6 +4,12 @@ import '../../data/datasources/database_helper.dart';
 import '../../data/datasources/entry_local_datasource.dart';
 import '../../data/datasources/section_local_datasource.dart';
 import '../../data/datasources/unit_local_datasource.dart';
+import '../../data/repositories/entry_repository_impl.dart';
+import '../../data/repositories/section_repository_impl.dart';
+import '../../data/repositories/unit_repository_impl.dart';
+import '../../domain/repositories/entry_repository.dart';
+import '../../domain/repositories/section_repository.dart';
+import '../../domain/repositories/unit_repository.dart';
 
 final getIt = GetIt.instance;
 
@@ -21,6 +27,17 @@ Future<void> setupDependencies() async {
   );
   getIt.registerLazySingleton<EntryLocalDataSource>(
     () => EntryLocalDataSource(getIt()),
+  );
+
+  // Repositories
+  getIt.registerLazySingleton<UnitRepository>(
+    () => UnitRepositoryImpl(getIt()),
+  );
+  getIt.registerLazySingleton<SectionRepository>(
+    () => SectionRepositoryImpl(getIt()),
+  );
+  getIt.registerLazySingleton<EntryRepository>(
+    () => EntryRepositoryImpl(getIt()),
   );
 
   // Инициализация БД (создание таблиц и предзаполнение)

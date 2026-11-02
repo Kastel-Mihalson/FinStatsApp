@@ -32,5 +32,9 @@ ios/Flutter/flutter_export_environment.sh
 /builds
 /buildErrors
 
+# Keystore files (NEVER commit these!)
+*.keystore
+keystore_base64.txt
+
 # Claude progress tracking
 .claude_progress.md
