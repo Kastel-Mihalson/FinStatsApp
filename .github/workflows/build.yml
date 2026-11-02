@@ -45,10 +45,6 @@ jobs:
 
       - run: flutter pub get
 
-      # Генерация кода для freezed и json_serializable
-      - name: Generate code
-        run: flutter pub run build_runner build --delete-conflicting-outputs
-
       # Постоянный ключ подписи: так новая сборка ставится ПОВЕРХ старой,
       # и данные приложения не удаляются. Ключ хранится не в репозитории,
       # а в секрете GitHub ANDROID_KEYSTORE_BASE64
@@ -103,10 +99,6 @@ jobs:
       #     /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string Галерея нужна для выбора фото" ios/Runner/Info.plist || true
 
       - run: flutter pub get
-
-      # Генерация кода для freezed и json_serializable
-      - name: Generate code
-        run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Build iOS (no codesign)
         run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
