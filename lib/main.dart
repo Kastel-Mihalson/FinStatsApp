@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -6,6 +7,7 @@ import 'core/di/injection.dart';
 import 'presentation/pages/sections_list_screen.dart';
 import 'presentation/providers/entry_provider.dart';
 import 'presentation/providers/section_provider.dart';
+import 'presentation/providers/settings_provider.dart';
 import 'presentation/providers/statistics_provider.dart';
 import 'presentation/providers/unit_provider.dart';
 
@@ -49,6 +51,9 @@ class App extends StatelessWidget {
     const seed = Color(0xFF6750A4);
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<SettingsProvider>.value(
+          value: getIt<SettingsProvider>(),
+        ),
         ChangeNotifierProvider(create: (_) => getIt<UnitProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<SectionProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<EntryProvider>()),
@@ -69,6 +74,14 @@ class App extends StatelessWidget {
           ),
         ),
         themeMode: ThemeMode.system,
+        // Русская локаль: календарь, кнопки диалогов, подсказки системных виджетов.
+        locale: const Locale('ru', 'RU'),
+        supportedLocales: const [Locale('ru', 'RU')],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         home: const SectionsListScreen(),
       ),
     );

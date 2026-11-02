@@ -228,7 +228,7 @@ class _SectionDetailScreenState extends State<SectionDetailScreen> {
   }
 
   String _formatAmount(Entry entry, String unitDisplayName) {
-    return '${AmountUtils.formatNumber(entry.amount, entry.valueType)} $unitDisplayName';
+    return '${AmountUtils.formatLocalized(entry.amount, entry.valueType)} $unitDisplayName';
   }
 
   void _showEntryOptions(BuildContext context, String entryId) {
@@ -394,8 +394,9 @@ class _TotalsCard extends StatelessWidget {
 
     final lines = <String>[
       for (final m in money)
-        '${m.amountInMainUnits.toStringAsFixed(2)} ${m.displayName}',
-      for (final q in quantities) q.formatted,
+        '${AmountUtils.formatLocalized(m.totalAmount, ValueType.money)} ${m.displayName}',
+      for (final q in quantities)
+        '${AmountUtils.formatLocalized(q.totalAmount, ValueType.quantity)} ${q.displayName}',
     ];
     if (lines.isEmpty) return const SizedBox.shrink();
 

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_utils.dart';
 import '../../domain/entities/entry.dart';
 import '../../domain/entities/unit.dart';
@@ -7,14 +8,46 @@ import '../../domain/repositories/entry_repository.dart';
 import '../../domain/repositories/unit_repository.dart';
 import '../../domain/usecases/money_aggregation_service.dart';
 import '../../domain/usecases/quantity_aggregation_service.dart';
+import 'settings_provider.dart';
 
 /// Provider для управления статистикой
 class StatisticsProvider with ChangeNotifier {
   final EntryRepository _entryRepository;
   final UnitRepository _unitRepository;
 
-  StatisticsProvider(this._entryRepository, this._unitRepository) {
+  final SettingsProvider? _settings;
+
+  /// [settings] необязателен: без него неделя начинается с понедельника.
+  StatisticsProvider(
+    this._entryRepository,
+    this._unitRepository, [
+    this._settings,
+  ]) {
+    _appliedWeekStart = weekStartsOnMonday;
+    _settings?.addListener(_onSettingsChanged);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _settings?.removeListener(_onSettingsChanged);
+    super.dispose();
+  }
+
+  /// Начало недели, с которым загружены текущие данные.
+  late bool _appliedWeekStart;
+
+  bool get weekStartsOnMonday =>
+      _settings?.weekStartsOnMonday ?? AppConstants.defaultWeekStartsOnMonday;
+
+  void _onSettingsChanged() {
+    if (weekStartsOnMonday == _appliedWeekStart) return;
+    if (_selectedPeriod == PeriodType.week) {
+      _loadData();
+    } else {
+      _appliedWeekStart = weekStartsOnMonday;
+      notifyListeners();
+    }
   }
 
   PeriodType _selectedPeriod = PeriodType.month;
@@ -71,7 +104,12 @@ class StatisticsProvider with ChangeNotifier {
 
     try {
       // Получить границы периода
-      final range = DateTimeUtils.getPeriodRange(_selectedDate, _selectedPeriod);
+      _appliedWeekStart = weekStartsOnMonday;
+      final range = DateTimeUtils.getPeriodRange(
+        _selectedDate,
+        _selectedPeriod,
+        weekStartsOnMonday: weekStartsOnMonday,
+      );
 
       // Загрузить записи за период
       _entries = await _entryRepository.getAllEntriesByPeriod(

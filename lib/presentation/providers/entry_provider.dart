@@ -5,13 +5,25 @@ import '../../core/enums/sort_type.dart';
 import '../../core/utils/date_utils.dart';
 import '../../domain/entities/entry.dart';
 import '../../domain/repositories/entry_repository.dart';
+import 'settings_provider.dart';
 
 /// Provider для управления записями раздела:
 /// список, выбранный период (с навигацией назад/вперёд) и сортировка.
 class EntryProvider with ChangeNotifier {
   final EntryRepository _repository;
+  final SettingsProvider? _settings;
 
-  EntryProvider(this._repository);
+  /// [settings] необязателен: без него используется неделя с понедельника.
+  EntryProvider(this._repository, [this._settings]) {
+    _appliedWeekStart = weekStartsOnMonday;
+    _settings?.addListener(_onSettingsChanged);
+  }
+
+  @override
+  void dispose() {
+    _settings?.removeListener(_onSettingsChanged);
+    super.dispose();
+  }
 
   List<Entry> _entries = [];
   bool _isLoading = false;
@@ -21,7 +33,8 @@ class EntryProvider with ChangeNotifier {
   PeriodType _period = PeriodType.all;
   DateTime _anchorDate = DateTime.now();
   SortType _sort = SortType.dateNewest;
-  bool _weekStartsOnMonday = AppConstants.defaultWeekStartsOnMonday;
+  /// Начало недели, с которым загружен текущий список.
+  late bool _appliedWeekStart;
 
   /// Номер последнего запроса: ответы устаревших запросов игнорируются
   /// (например, пользователь быстро переключает периоды).
@@ -35,7 +48,8 @@ class EntryProvider with ChangeNotifier {
   PeriodType get period => _period;
   DateTime get anchorDate => _anchorDate;
   SortType get sort => _sort;
-  bool get weekStartsOnMonday => _weekStartsOnMonday;
+  bool get weekStartsOnMonday =>
+      _settings?.weekStartsOnMonday ?? AppConstants.defaultWeekStartsOnMonday;
 
   /// Можно ли листать периоды (для «Всё время» — нет).
   bool get canNavigatePeriod => _period != PeriodType.all;
@@ -44,7 +58,7 @@ class EntryProvider with ChangeNotifier {
   String get periodLabel => DateTimeUtils.formatPeriodLabel(
         _anchorDate,
         _period,
-        weekStartsOnMonday: _weekStartsOnMonday,
+        weekStartsOnMonday: weekStartsOnMonday,
       );
 
   /// Открыть раздел: сбрасывает период на «Всё время» и сортировку на
@@ -88,13 +102,16 @@ class EntryProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Начало недели (для будущего экрана настроек).
-  Future<void> setWeekStartsOnMonday(bool value) {
-    if (_weekStartsOnMonday == value) return Future.value();
-    _weekStartsOnMonday = value;
-    if (_period == PeriodType.week) return _load();
-    notifyListeners();
-    return Future.value();
+  /// Изменилось начало недели в настройках — перечитать записи за «Неделю».
+  void _onSettingsChanged() {
+    if (weekStartsOnMonday == _appliedWeekStart) return;
+    _appliedWeekStart = weekStartsOnMonday;
+    if (_currentSectionId == null) return;
+    if (_period == PeriodType.week) {
+      _load();
+    } else {
+      notifyListeners();
+    }
   }
 
   /// Обновить текущий список записей (с сохранением периода и сортировки).
@@ -105,6 +122,7 @@ class EntryProvider with ChangeNotifier {
     if (sectionId == null) return;
 
     final loadId = ++_loadId;
+    _appliedWeekStart = weekStartsOnMonday;
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -117,7 +135,7 @@ class EntryProvider with ChangeNotifier {
         final range = DateTimeUtils.getPeriodRange(
           _anchorDate,
           _period,
-          weekStartsOnMonday: _weekStartsOnMonday,
+          weekStartsOnMonday: weekStartsOnMonday,
         );
         loaded = await _repository.getEntriesByPeriod(
           sectionId: sectionId,

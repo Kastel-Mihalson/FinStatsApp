@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/section_provider.dart';
 import 'section_form_screen.dart';
 import 'section_detail_screen.dart';
+import 'settings_screen.dart';
 import 'statistics_screen.dart';
 
 /// Главный экран: список всех разделов
@@ -24,6 +25,18 @@ class SectionsListScreen extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const StatisticsScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Настройки',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
                 ),
               );
             },

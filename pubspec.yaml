@@ -9,6 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # Database
   sqflite: ^2.3.0
@@ -19,7 +21,7 @@ dependencies:
   get_it: ^7.6.0
 
   # Utils
-  intl: ^0.19.0
+  intl: any # версию задаёт flutter_localizations
   uuid: ^4.2.0
 
   # Settings storage

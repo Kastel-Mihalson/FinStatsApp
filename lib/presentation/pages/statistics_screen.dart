@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/utils/amount_utils.dart';
 import '../../core/utils/date_utils.dart';
+import '../../domain/entities/entry.dart';
 import '../../domain/usecases/money_aggregation_service.dart';
 import '../../domain/usecases/quantity_aggregation_service.dart';
 import '../providers/statistics_provider.dart';
@@ -217,6 +219,7 @@ class _PeriodInfo extends StatelessWidget {
     final range = DateTimeUtils.getPeriodRange(
       provider.selectedDate,
       provider.selectedPeriod,
+      weekStartsOnMonday: provider.weekStartsOnMonday,
     );
 
     String periodText;
@@ -341,7 +344,7 @@ class _MoneyCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${aggregation.amountInMainUnits.toStringAsFixed(2)} ${aggregation.displayName}',
+                    '${AmountUtils.formatLocalized(aggregation.totalAmount, ValueType.money)} ${aggregation.displayName}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -402,7 +405,7 @@ class _QuantityCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    aggregation.formatted,
+                    '${AmountUtils.formatLocalized(aggregation.totalAmount, ValueType.quantity)} ${aggregation.displayName}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

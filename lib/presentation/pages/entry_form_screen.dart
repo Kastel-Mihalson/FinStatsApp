@@ -7,6 +7,7 @@ import '../../core/utils/amount_utils.dart';
 import '../../domain/entities/entry.dart';
 import '../../domain/entities/unit.dart';
 import '../providers/entry_provider.dart';
+import '../providers/settings_provider.dart';
 import '../providers/unit_provider.dart';
 
 /// Экран создания/редактирования записи
@@ -44,14 +45,25 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
     } else {
       // Выбрать первую валюту по умолчанию для новой записи
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final currencies = context.read<UnitProvider>().currencies;
-        if (currencies.isNotEmpty) {
+        final defaultId = _defaultCurrencyId();
+        if (defaultId != null) {
           setState(() {
-            _selectedUnitId = currencies.first.id;
+            _selectedUnitId = defaultId;
           });
         }
       });
     }
+  }
+
+  /// Id валюты по умолчанию из настроек (если такой нет — первая в списке).
+  int? _defaultCurrencyId() {
+    final currencies = context.read<UnitProvider>().currencies;
+    if (currencies.isEmpty) return null;
+    final code = context.read<SettingsProvider>().defaultCurrencyCode;
+    for (final c in currencies) {
+      if (c.code == code) return c.id;
+    }
+    return currencies.first.id;
   }
 
   Future<void> _loadEntry() async {
@@ -137,7 +149,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                       onSelectionChanged: (Set<ValueType> newSelection) {
                         setState(() {
                           _valueType = newSelection.first;
-                          _selectedUnitId = null;
+                          _selectedUnitId = _valueType == ValueType.money
+                              ? _defaultCurrencyId()
+                              : null;
                         });
                       },
                     ),

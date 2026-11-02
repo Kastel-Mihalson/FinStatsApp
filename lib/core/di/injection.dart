@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/datasources/database_helper.dart';
 import '../../data/datasources/entry_local_datasource.dart';
@@ -12,6 +13,7 @@ import '../../domain/repositories/section_repository.dart';
 import '../../domain/repositories/unit_repository.dart';
 import '../../presentation/providers/entry_provider.dart';
 import '../../presentation/providers/section_provider.dart';
+import '../../presentation/providers/settings_provider.dart';
 import '../../presentation/providers/statistics_provider.dart';
 import '../../presentation/providers/unit_provider.dart';
 
@@ -19,6 +21,13 @@ final getIt = GetIt.instance;
 
 /// Инициализация DI контейнера
 Future<void> setupDependencies() async {
+  // Настройки
+  final prefs = await SharedPreferences.getInstance();
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  getIt.registerLazySingleton<SettingsProvider>(
+    () => SettingsProvider(getIt()),
+  );
+
   // Database
   getIt.registerLazySingleton<DatabaseHelper>(() => DatabaseHelper());
 
@@ -52,10 +61,10 @@ Future<void> setupDependencies() async {
     () => SectionProvider(getIt()),
   );
   getIt.registerFactory<EntryProvider>(
-    () => EntryProvider(getIt()),
+    () => EntryProvider(getIt(), getIt<SettingsProvider>()),
   );
   getIt.registerFactory<StatisticsProvider>(
-    () => StatisticsProvider(getIt(), getIt()),
+    () => StatisticsProvider(getIt(), getIt(), getIt<SettingsProvider>()),
   );
 
   // Инициализация БД (создание таблиц и предзаполнение)
