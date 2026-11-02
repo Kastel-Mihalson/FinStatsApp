@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 
 import 'core/di/injection.dart';
-import 'presentation/pages/app_template_page.dart';
+import 'presentation/pages/sections_list_screen.dart';
+import 'presentation/providers/entry_provider.dart';
+import 'presentation/providers/section_provider.dart';
+import 'presentation/providers/unit_provider.dart';
 
 /// Название приложения внутри Flutter (заголовок в списке запущенных).
 /// Название под иконкой задаётся в .github/workflows/build.yml (APP_NAME).
@@ -42,22 +46,29 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const seed = Color(0xFF6750A4);
-    return MaterialApp(
-      title: appTitle,
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: seed),
-      ),
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: seed,
-          brightness: Brightness.dark,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => getIt<UnitProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<SectionProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<EntryProvider>()),
+      ],
+      child: MaterialApp(
+        title: appTitle,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: seed),
         ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: seed,
+            brightness: Brightness.dark,
+          ),
+        ),
+        themeMode: ThemeMode.system,
+        home: const SectionsListScreen(),
       ),
-      themeMode: ThemeMode.system,
-      home: const AppTemplatePage(),
     );
   }
 }

@@ -10,6 +10,9 @@ import '../../data/repositories/unit_repository_impl.dart';
 import '../../domain/repositories/entry_repository.dart';
 import '../../domain/repositories/section_repository.dart';
 import '../../domain/repositories/unit_repository.dart';
+import '../../presentation/providers/entry_provider.dart';
+import '../../presentation/providers/section_provider.dart';
+import '../../presentation/providers/unit_provider.dart';
 
 final getIt = GetIt.instance;
 
@@ -38,6 +41,17 @@ Future<void> setupDependencies() async {
   );
   getIt.registerLazySingleton<EntryRepository>(
     () => EntryRepositoryImpl(getIt()),
+  );
+
+  // Providers
+  getIt.registerFactory<UnitProvider>(
+    () => UnitProvider(getIt()),
+  );
+  getIt.registerFactory<SectionProvider>(
+    () => SectionProvider(getIt()),
+  );
+  getIt.registerFactory<EntryProvider>(
+    () => EntryProvider(getIt()),
   );
 
   // Инициализация БД (создание таблиц и предзаполнение)
