@@ -225,6 +225,9 @@ class _EntryFormScreenState extends State<EntryFormScreen> {
                           return 'Введите значение';
                         }
                         final number = double.tryParse(value);
+                        if (number != null && number > AmountUtils.maxInputValue) {
+                          return 'Слишком большое значение';
+                        }
                         if (number == null || number <= 0) {
                           return 'Введите корректное значение';
                         }

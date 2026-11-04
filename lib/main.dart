@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'core/di/injection.dart';
+import 'domain/usecases/export_csv_usecase.dart';
 import 'presentation/pages/sections_list_screen.dart';
 import 'presentation/providers/entry_provider.dart';
 import 'presentation/providers/section_provider.dart';
@@ -54,6 +55,7 @@ class App extends StatelessWidget {
         ChangeNotifierProvider<SettingsProvider>.value(
           value: getIt<SettingsProvider>(),
         ),
+        Provider<ExportCsvUseCase>.value(value: getIt<ExportCsvUseCase>()),
         ChangeNotifierProvider(create: (_) => getIt<UnitProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<SectionProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<EntryProvider>()),

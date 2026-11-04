@@ -1,6 +1,11 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
+import '../../domain/usecases/export_csv_usecase.dart';
 import '../providers/settings_provider.dart';
 import '../providers/unit_provider.dart';
 
@@ -42,23 +47,48 @@ class SettingsScreen extends StatelessWidget {
             onTap: () => _pickWeekStart(context),
           ),
           const Divider(),
-          // Эти пункты появятся на этапе 7 (экспорт CSV, PIN/биометрия).
           const ListTile(
             enabled: false,
             leading: Icon(Icons.lock_outline),
             title: Text('Блокировка приложения'),
             subtitle: Text('Появится позже'),
           ),
-          const ListTile(
-            enabled: false,
-            leading: Icon(Icons.file_download_outlined),
-            title: Text('Экспорт данных (CSV)'),
-            subtitle: Text('Появится позже'),
+          ListTile(
+            leading: const Icon(Icons.file_download_outlined),
+            title: const Text('Экспорт данных (CSV)'),
+            subtitle: const Text('Разделы и записи в файлах .csv'),
+            onTap: () => _exportCsv(context),
           ),
         ],
       ),
     );
   }
+
+  Future<void> _exportCsv(BuildContext context) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final exporter = context.read<ExportCsvUseCase>();
+    try {
+      final sectionsCsv = await exporter.exportSections();
+      final entriesCsv = await exporter.exportEntries();
+      await Share.shareXFiles(
+        [
+          _csvFile(sectionsCsv, 'sections.csv'),
+          _csvFile(entriesCsv, 'entries.csv'),
+        ],
+        subject: 'Экспорт FinStatsApp',
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(content: Text('Не удалось экспортировать данные: $e')),
+      );
+    }
+  }
+
+  XFile _csvFile(String content, String name) => XFile.fromData(
+        Uint8List.fromList(utf8.encode(content)),
+        mimeType: 'text/csv',
+        name: name,
+      );
 
   Future<void> _pickCurrency(BuildContext context) async {
     final settings = context.read<SettingsProvider>();

@@ -11,6 +11,7 @@ import '../../data/repositories/unit_repository_impl.dart';
 import '../../domain/repositories/entry_repository.dart';
 import '../../domain/repositories/section_repository.dart';
 import '../../domain/repositories/unit_repository.dart';
+import '../../domain/usecases/export_csv_usecase.dart';
 import '../../presentation/providers/entry_provider.dart';
 import '../../presentation/providers/section_provider.dart';
 import '../../presentation/providers/settings_provider.dart';
@@ -51,6 +52,11 @@ Future<void> setupDependencies() async {
   );
   getIt.registerLazySingleton<EntryRepository>(
     () => EntryRepositoryImpl(getIt()),
+  );
+
+  // Use cases
+  getIt.registerLazySingleton<ExportCsvUseCase>(
+    () => ExportCsvUseCase(getIt(), getIt(), getIt()),
   );
 
   // Providers

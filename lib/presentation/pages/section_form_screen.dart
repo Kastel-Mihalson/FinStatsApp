@@ -6,6 +6,14 @@ import '../../domain/entities/section.dart';
 import '../providers/section_provider.dart';
 
 /// Экран создания/редактирования раздела
+class _SectionTemplate {
+  final String name;
+  final String icon;
+  final int color;
+
+  const _SectionTemplate(this.name, this.icon, this.color);
+}
+
 class SectionFormScreen extends StatefulWidget {
   final String? sectionId;
 
@@ -43,6 +51,22 @@ class _SectionFormScreenState extends State<SectionFormScreen> {
     0xFF607D8B, // Серый
     0xFFE91E63, // Розовый
   ];
+
+  static const _templates = [
+    _SectionTemplate('Продукты', '🛒', 0xFF4CAF50),
+    _SectionTemplate('Транспорт', '🚗', 0xFFFF9800),
+    _SectionTemplate('Подписки', '📱', 0xFF9C27B0),
+    _SectionTemplate('Здоровье', '💊', 0xFFF44336),
+    _SectionTemplate('Жильё', '🏠', 0xFF2196F3),
+  ];
+
+  void _applyTemplate(_SectionTemplate template) {
+    setState(() {
+      _nameController.text = template.name;
+      _selectedIcon = template.icon;
+      _selectedColor = template.color;
+    });
+  }
 
   @override
   void initState() {
@@ -87,6 +111,28 @@ class _SectionFormScreenState extends State<SectionFormScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    if (!isEditing) ...[
+                      const Text(
+                        'Шаблоны',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _templates.map((template) {
+                          return ActionChip(
+                            avatar: Text(template.icon),
+                            label: Text(template.name),
+                            onPressed: () => _applyTemplate(template),
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
                     // Название
                     TextFormField(
                       controller: _nameController,

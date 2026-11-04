@@ -10,6 +10,8 @@ class AmountUtils {
 
   static int decimalsFor(ValueType type) => type == ValueType.money ? 2 : 3;
 
+  static const double maxInputValue = 999999999.99;
+
   /// Введённое пользователем число → хранимое целое.
   static int toStored(double value, ValueType type) =>
       (value * scaleFor(type)).round();

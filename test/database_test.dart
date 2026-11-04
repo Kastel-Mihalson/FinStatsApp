@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fin_stats_app/core/constants/app_constants.dart';
+import 'package:path/path.dart';
 import 'package:fin_stats_app/data/datasources/database_helper.dart';
 import 'package:fin_stats_app/data/datasources/unit_local_datasource.dart';
 import 'package:fin_stats_app/data/datasources/section_local_datasource.dart';
@@ -20,6 +22,9 @@ void main() {
   });
 
   setUp(() async {
+    final dbPath = join(await databaseFactoryFfi.getDatabasesPath(), AppConstants.dbName);
+    await databaseFactoryFfi.deleteDatabase(dbPath);
+
     dbHelper = DatabaseHelper();
     unitDataSource = UnitLocalDataSource(dbHelper);
     sectionDataSource = SectionLocalDataSource(dbHelper);
@@ -52,7 +57,7 @@ void main() {
         id: 'test-section-1',
         name: 'Тестовый раздел',
         icon: '💰',
-        color: '#FF5722',
+        color: 0xFFFF5722,
         createdAt: now,
         updatedAt: now,
       );
@@ -63,7 +68,7 @@ void main() {
       expect(retrieved, isNotNull);
       expect(retrieved!.name, 'Тестовый раздел');
       expect(retrieved.icon, '💰');
-      expect(retrieved.color, '#FF5722');
+      expect(retrieved.color, 0xFFFF5722);
     });
 
     test('Создание и чтение Entry', () async {
@@ -71,6 +76,8 @@ void main() {
       final now = DateTime.now().millisecondsSinceEpoch;
       final section = SectionModel(
         id: 'test-section-2',
+        icon: '📁',
+        color: 0xFF2196F3,
         name: 'Покупки',
         createdAt: now,
         updatedAt: now,
@@ -108,6 +115,8 @@ void main() {
       // Создаём раздел
       final section = SectionModel(
         id: 'test-section-3',
+        icon: '📁',
+        color: 0xFF2196F3,
         name: 'Транспорт',
         createdAt: now,
         updatedAt: now,
@@ -146,6 +155,8 @@ void main() {
       // Создаём раздел
       final section = SectionModel(
         id: 'test-section-4',
+        icon: '📁',
+        color: 0xFF2196F3,
         name: 'Еда',
         createdAt: now,
         updatedAt: now,

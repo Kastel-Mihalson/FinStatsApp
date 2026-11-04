@@ -20,6 +20,9 @@ class DatabaseHelper {
     return await openDatabase(
       path,
       version: AppConstants.dbVersion,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: _onCreate,
     );
   }
@@ -94,7 +97,10 @@ class DatabaseHelper {
   }
 
   Future<void> close() async {
-    final db = await database;
-    await db.close();
+    final db = _database;
+    _database = null;
+    if (db != null && db.isOpen) {
+      await db.close();
+    }
   }
 }
